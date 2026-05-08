@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<!--
+  Program name: homework4.html
+  Author: Student Name
+  Date created: April 20, 2026
+  Date last edited: April 28, 2026
+  Version: 4.0
+  Description: Patient registration form for Aabids Medical Clinic.
+  Built on top of homework 3. New features added for hw4:
+    - Fetch API: loads the state dropdown options from states.html
+    - iFrame: embedded Google Maps location in the body
+    - Fixed header: stays at top when user scrolls
+    - Fixed footer: stays at bottom when user scrolls (content protection)
+    - Cookies: remembers user's first name for 48 hours, shows
+               welcome back message, pre-fills first name field
+    - LocalStorage: saves all non-sensitive form data on blur,
+                    restores it if the same user comes back
+    - "Remember Me" checkbox: if unchecked, wipes cookie + storage
+    - "Not [name]? Start over" link: expires cookie, clears storage
+  External CSS: style.css
+  External JS:  validation.js  homework4.js
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aabids Medical Clinic - Patient Registration</title>
+  <link href="style.css" rel="stylesheet">
+  <!-- validation.js has all the field validators from hw3 -->
+  <script src="validation.js"></script>
+  <!-- homework4.js has all the new hw4 features -->
+  <script src="homework4.js"></script>
+</head>
+
+<!--
+  initPage() sets up the date, DOB limits, and cookie check.
+  The cookie check runs first so the welcome message is ready
+  before anything else paints on screen.
+-->
+<body onload="initPage();">
+
+<!-- =====================================================
+     FIXED HEADER
+     position:fixed in CSS so it stays at top when scrolling.
+     Shows dynamic date AND the cookie-based welcome message.
+     ===================================================== -->
+<div id="banner">
+  <div id="banner-logo">
+    <!-- inline SVG medical cross logo -->
+    <svg width="62" height="62" viewBox="0 0 72 72"
+         xmlns="http://www.w3.org/2000/svg" aria-label="Aabids Medical logo">
+      <circle cx="36" cy="36" r="34" fill="#1a56db" stroke="#fff" stroke-width="3"/>
+      <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+      <rect x="29" y="14" width="14" height="44" rx="5" fill="#fff"/>
+      <rect x="14" y="29" width="44" height="14" rx="5" fill="#fff"/>
+    </svg>
+  </div>
+
+  <div id="banner-text">
+    <h1>Aabids Medical Clinic</h1>
+    <!-- dynamic date - filled by initPage() -->
+    <p id="dynamic-date"></p>
+    <!-- cookie welcome message - filled by checkCookie() in homework4.js -->
+    <p id="welcome-msg"></p>
+  </div>
+
+  <!-- "Not you?" link - only shown when a cookie exists -->
+  <div id="not-you-box" style="display:none;">
+    <!-- clicking this expires the cookie and clears all saved data -->
+    <span id="not-you-msg"></span>
+    <a href="#" id="not-you-link" onclick="startAsNewUser(); return false;">
+      Click here to start as a new user
+    </a>
+  </div>
+</div><!-- end fixed banner -->
+
+<!-- spacer so fixed header doesn't cover the top of the page content -->
+<div id="banner-spacer"></div>
+
+<!-- =====================================================
+     PAGE WRAPPER - form left, review panel right
+     ===================================================== -->
+<div id="page-wrapper">
+
+<!-- LEFT: the form -->
+<div id="main-content">
+
+  <h2>New Patient Registration</h2>
+  <p class="form-intro">
+    Fields marked <span class="req">*</span> are required.
+    Hover over any field for instructions. <kbd>Tab</kbd> moves between fields.
+    Errors appear as you go and must all be fixed before you can submit.
+  </p>
+
+  <!-- error banner - hidden until errors exist -->
+  <div id="error-banner" style="display:none;">
+    <span id="error-count-msg"></span>
+  </div>
+
+  <form name="patientForm" id="patientForm"
+        onsubmit="return false;"
+        novalidate>
+
+    <!-- =====================================================
+         BLOCK 1 - PERSONAL INFO
+         fname gets pre-filled from cookie if returning user
+         ===================================================== -->
+    <fieldset>
+      <legend>&#128100; Block 1 &mdash; Personal Information</legend>
+      <table class="form-table">
+
+        <tr>
+          <td class="lbl"><label for="fname">Name <span class="req">*</span></label></td>
+          <td>
+            <input type="text" id="fname" name="fname"
+                   maxlength="30" size="16"
+                   placeholder="First Name"
+                   tabindex="1"
+                   title="First Name: 1 to 30 characters. Letters, apostrophes, and dashes only."
+                   pattern="[A-Za-z'\-]{1,30}"
+                   required
+                   oninput="validateName('fname','fname-err','First Name')"
+                   onblur="validateName('fname','fname-err','First Name'); saveToStorage('fname')">
+            &nbsp;
+            <label for="mi" class="inline-lbl">MI</label>
+            <input type="text" id="mi" name="mi"
+                   maxlength="1" size="2"
+                   placeholder="M"
+                   tabindex="2"
+                   title="Middle Initial: one letter only, optional."
+                   pattern="[A-Za-z]"
+                   style="width:2.8em;text-align:center;"
+                   oninput="validateMI()"
+                   onblur="validateMI(); saveToStorage('mi')">
+            &nbsp;
+            <label for="lname" class="inline-lbl">Last <span class="req">*</span></label>
+            <input type="text" id="lname" name="lname"
+                   maxlength="30" size="16"
+                   placeholder="Last Name"
+                   tabindex="3"
+                   title="Last Name: 1 to 30 characters. Letters, apostrophes, and dashes only."
+                   pattern="[A-Za-z'\-\s]{1,30}"
+                   required
+                   oninput="validateName('lname','lname-err','Last Name')"
+                   onblur="validateName('lname','lname-err','Last Name'); saveToStorage('lname')">
+            <br>
+            <span class="err-msg" id="fname-err"></span>
+            <span class="err-msg" id="mi-err"></span>
+            <span class="err-msg" id="lname-err"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="lbl"><label for="dob">Date of Birth <span class="req">*</span></label></td>
+          <td>
+            <input type="date" id="dob" name="dob"
+                   tabindex="4"
+                   title="Date of Birth: must be a past date, not today and not more than 120 years ago."
+                   required
+                   onchange="validateDOB()"
+                   onblur="validateDOB(); saveToStorage('dob')">
+            <br><span class="err-msg" id="dob-err"></span>
+            <span class="hint">Between 120 years ago and yesterday.</span>
+          </td>
+        </tr>
+
+        <!-- SSN: auto-formats as you type, NOT saved to localStorage (sensitive) -->
+        <tr>
+          <td class="lbl"><label for="ssn">Social Security # <span class="req">*</span></label></td>
+          <td>
+            <input type="text" id="ssn" name="ssn"
+                   maxlength="11" size="14"
+                   placeholder="XXX-XX-XXXX"
+                   tabindex="5"
+                   title="SSN: 9 digits only. Dashes are added automatically as you type."
+                   required
+                   oninput="formatSSN()"
+                   onblur="validateSSN()">
+            <!-- note: no saveToStorage() here - SSN is sensitive data -->
+            <br><span class="err-msg" id="ssn-err"></span>
+            <span class="hint">&#128274; Digits only. Dashes added automatically.</span>
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <!-- =====================================================
+         BLOCK 2 - CONTACT INFO
+         ===================================================== -->
+    <fieldset>
+      <legend>&#128222; Block 2 &mdash; Contact Information</legend>
+      <table class="form-table">
+
+        <tr>
+          <td class="lbl"><label for="email">Email Address <span class="req">*</span></label></td>
+          <td>
+            <input type="text" id="email" name="email"
+                   maxlength="80" size="34"
+                   placeholder="name@domain.com"
+                   tabindex="6"
+                   title="Email: must be in the format name@domain.com. Will be lowercased automatically."
+                   pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                   required
+                   oninput="validateEmail()"
+                   onblur="validateEmail(); forceLowercase('email'); saveToStorage('email')">
+            <br><span class="err-msg" id="email-err"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="lbl"><label for="phone">Phone Number</label></td>
+          <td>
+            <input type="text" id="phone" name="phone"
+                   maxlength="12" size="14"
+                   placeholder="713-555-1234"
+                   tabindex="7"
+                   title="Phone: optional. Dashes added automatically. Format: NNN-NNN-NNNN."
+                   pattern="\d{3}-\d{3}-\d{4}"
+                   oninput="formatPhone()"
+                   onblur="validatePhone(); saveToStorage('phone')">
+            <br><span class="err-msg" id="phone-err"></span>
+            <span class="hint">Optional. Format: NNN-NNN-NNNN</span>
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <!-- =====================================================
+         BLOCK 3 - ADDRESS
+         State dropdown gets populated by Fetch API from states.html
+         ===================================================== -->
+    <fieldset>
+      <legend>&#127968; Block 3 &mdash; Home Address</legend>
+      <table class="form-table">
+
+        <tr>
+          <td class="lbl"><label for="addr1">Address Line 1 <span class="req">*</span></label></td>
+          <td>
+            <input type="text" id="addr1" name="addr1"
+                   maxlength="30" size="34"
+                   placeholder="Street number and name"
+                   tabindex="8"
+                   title="Address Line 1: required. 2 to 30 characters."
+                   minlength="2" required
+                   oninput="validateAddress('addr1','addr1-err',true)"
+                   onblur="validateAddress('addr1','addr1-err',true); saveToStorage('addr1')">
+            <br><span class="err-msg" id="addr1-err"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="lbl"><label for="addr2">Address Line 2</label></td>
+          <td>
+            <input type="text" id="addr2" name="addr2"
+                   maxlength="30" size="34"
+                   placeholder="Apt, Suite, Unit (optional)"
+                   tabindex="9"
+                   title="Address Line 2: optional. If filled in, needs at least 2 characters."
+                   minlength="2"
+                   oninput="validateAddress('addr2','addr2-err',false)"
+                   onblur="validateAddress('addr2','addr2-err',false); saveToStorage('addr2')">
+            <br><span class="err-msg" id="addr2-err"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="lbl"><label for="city">City / State / ZIP <span class="req">*</span></label></td>
+          <td>
+            <input type="text" id="city" name="city"
+                   maxlength="30" size="18"
+                   placeholder="City"
+                   tabindex="10"
+                   title="City: required. Letters and spaces only, 2 to 30 characters."
+                   pattern="[A-Za-z\s\-\.]{2,30}"
+                   required
+                   oninput="validateCity()"
+                   onblur="validateCity(); saveToStorage('city')">
+            &nbsp;
+            <label for="state" class="inline-lbl">State <span class="req">*</span></label>
+            <!--
+              This dropdown starts empty.
+              The Fetch API in homework4.js loads states.html
+              and fills this in when the page loads.
+            -->
+            <select id="state" name="state" tabindex="11"
+                    title="State: required. Pick your state from the list."
+                    onchange="validateState(); saveToStorage('state')">
+              <option value="">(Loading states...)</option>
+            </select>
+            &nbsp;
+            <label for="zip" class="inline-lbl">ZIP <span class="req">*</span></label>
+            <input type="text" id="zip" name="zip"
+                   maxlength="5" size="7"
+                   placeholder="77496"
+                   tabindex="12"
+                   title="ZIP Code: exactly 5 digits. Numbers only."
+                   pattern="\d{5}"
+                   required
+                   oninput="validateZip()"
+                   onblur="validateZip(); saveToStorage('zip')">
+            <br>
+            <span class="err-msg" id="city-err"></span>
+            <span class="err-msg" id="state-err"></span>
+            <span class="err-msg" id="zip-err"></span>
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <!-- =====================================================
+         IFRAME SECTION
+         Embedded Google Maps showing the clinic location.
+         Shows the user where the clinic is without leaving the page.
+         ===================================================== -->
+    <fieldset>
+      <legend>&#128205; Block 4 &mdash; Our Location</legend>
+      <p class="section-note">
+        Aabids Medical Clinic is conveniently located in Sugar Land, TX.
+        You can interact with the map below:
+      </p>
+      <div id="map-wrapper">
+        <!--
+          iFrame embedding Google Maps.
+          allowfullscreen lets the user go fullscreen if they want.
+          loading="lazy" so it doesn't slow down the page load.
+        -->
+        <iframe
+          id="clinic-map"
+          title="Aabids Medical Clinic Location - Sugar Land TX"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3464.7!2d-95.6346!3d29.6197!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjnCsDM3JzExLjAiTiA5NcKwMzgnMDQuNiJX!5e0!3m2!1sen!2sus!4v1234567890"
+          width="100%"
+          height="300"
+          style="border:2px solid #aac4e0; border-radius:8px;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+        <p class="hint" style="margin-top:6px;">
+          &#128205; PO Box 18881, Sugar Land, TX 77496 &nbsp;|&nbsp;
+          Phone: (713) 555-9100 &nbsp;|&nbsp;
+          <a href="https://www.google.com/maps" target="_blank" rel="noopener">Open in Google Maps</a>
+        </p>
+      </div>
+    </fieldset>
+
+    <!-- =====================================================
+         BLOCK 5 - HEALTH AND CHOICES
+         checkboxes, radios, sliders, textarea
+         ===================================================== -->
+    <fieldset>
+      <legend>&#9745; Block 5 &mdash; Health &amp; Preferences</legend>
+
+      <p class="section-note">Check everything that applies to your medical history:</p>
+      <table class="form-table">
+        <tr>
+          <td class="lbl">Have you had&hellip;</td>
+          <td class="checkbox-group">
+            <label class="cb-label" title="Check if you've previously had Chicken Pox">
+              <input type="checkbox" name="hx_chickenpox" value="chickenpox"
+                     onchange="saveCheckboxes()"> Chicken Pox
+            </label>
+            <label class="cb-label" title="Check if you've previously had Measles">
+              <input type="checkbox" name="hx_measles" value="measles"
+                     onchange="saveCheckboxes()"> Measles
+            </label>
+            <label class="cb-label" title="Check if you've had COVID-19">
+              <input type="checkbox" name="hx_covid" value="covid"
+                     onchange="saveCheckboxes()"> COVID-19
+            </label>
+            <label class="cb-label" title="Check if you've had Small Pox">
+              <input type="checkbox" name="hx_smallpox" value="smallpox"
+                     onchange="saveCheckboxes()"> Small Pox
+            </label>
+            <label class="cb-label" title="Check if you've had a Tetanus shot">
+              <input type="checkbox" name="hx_tetanus" value="tetanus"
+                     onchange="saveCheckboxes()"> Tetanus Shot
+            </label>
+            <label class="cb-label" title="Check if you get an annual flu shot">
+              <input type="checkbox" name="hx_flu" value="flu"
+                     onchange="saveCheckboxes()"> Annual Flu Shot
+            </label>
+            <label class="cb-label" title="Check if you've had Hepatitis B vaccine">
+              <input type="checkbox" name="hx_hepb" value="hepb"
+                     onchange="saveCheckboxes()"> Hepatitis B
+            </label>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table" style="margin-top:10px;">
+        <tr>
+          <td class="lbl">Gender <span class="req">*</span></td>
+          <td class="radio-group">
+            <label class="rb-label"><input type="radio" name="gender" value="Male"
+              onchange="validateRadio('gender','gender-err','Please select a gender.'); saveToStorage('gender')"> Male</label>
+            <label class="rb-label"><input type="radio" name="gender" value="Female"
+              onchange="validateRadio('gender','gender-err','Please select a gender.'); saveToStorage('gender')"> Female</label>
+            <label class="rb-label"><input type="radio" name="gender" value="Other"
+              onchange="validateRadio('gender','gender-err','Please select a gender.'); saveToStorage('gender')"> Other</label>
+            <br><span class="err-msg" id="gender-err"></span>
+          </td>
+        </tr>
+        <tr>
+          <td class="lbl">Fully Vaccinated? <span class="req">*</span></td>
+          <td class="radio-group">
+            <label class="rb-label"><input type="radio" name="vaccinated" value="Yes"
+              onchange="validateRadio('vaccinated','vaccinated-err','Please answer this.'); saveToStorage('vaccinated')"> Yes</label>
+            <label class="rb-label"><input type="radio" name="vaccinated" value="No"
+              onchange="validateRadio('vaccinated','vaccinated-err','Please answer this.'); saveToStorage('vaccinated')"> No</label>
+            <br><span class="err-msg" id="vaccinated-err"></span>
+          </td>
+        </tr>
+        <tr>
+          <td class="lbl">Has Insurance? <span class="req">*</span></td>
+          <td class="radio-group">
+            <label class="rb-label"><input type="radio" name="insurance" value="Yes"
+              onchange="validateRadio('insurance','insurance-err','Please answer this.'); saveToStorage('insurance')"> Yes</label>
+            <label class="rb-label"><input type="radio" name="insurance" value="No"
+              onchange="validateRadio('insurance','insurance-err','Please answer this.'); saveToStorage('insurance')"> No</label>
+            <br><span class="err-msg" id="insurance-err"></span>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table" style="margin-top:12px;">
+        <tr>
+          <td class="lbl"><label for="healthScore">Overall Health <span class="req">*</span></label></td>
+          <td>
+            <div class="slider-row">
+              <span class="slider-end">1<br><small>Poor</small></span>
+              <input type="range" id="healthScore" name="healthScore"
+                     min="1" max="10" value="5" step="1" tabindex="13"
+                     title="Rate your health from 1 (poor) to 10 (excellent)."
+                     oninput="updateSlider('healthScore','healthVal','','')"
+                     onchange="saveToStorage('healthScore')">
+              <span class="slider-end">10<br><small>Excellent</small></span>
+              <span class="slider-current">Score: <strong id="healthVal">5</strong>/10</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="lbl"><label for="salaryBar">Desired Salary</label></td>
+          <td>
+            <div class="slider-row">
+              <span class="slider-end">$20k</span>
+              <input type="range" id="salaryBar" name="salaryBar"
+                     min="20000" max="200000" value="60000" step="5000" tabindex="14"
+                     title="Slide to pick your desired annual salary."
+                     oninput="updateSalarySlider()"
+                     onchange="saveToStorage('salaryBar')">
+              <span class="slider-end">$200k</span>
+              <span class="slider-current"><strong id="salaryVal">$60,000</strong>/yr</span>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <table class="form-table" style="margin-top:8px;">
+        <tr>
+          <td class="lbl"><label for="symptoms">Current Symptoms</label></td>
+          <td>
+            <textarea id="symptoms" name="symptoms"
+                      rows="5" cols="55" tabindex="15"
+                      title="Optional. Describe your symptoms. Please avoid quotation marks."
+                      placeholder="Describe your symptoms here (optional). Avoid quotation marks."
+                      oninput="validateSymptoms()"
+                      onblur="validateSymptoms(); saveToStorage('symptoms')"></textarea>
+            <br><span class="err-msg" id="symptoms-err"></span>
+            <span class="hint">Optional. Avoid &quot; quotation marks.</span>
+          </td>
+        </tr>
+      </table>
+
+    </fieldset>
+
+    <!-- =====================================================
+         BLOCK 6 - ACCOUNT SETUP
+         Passwords NOT saved to localStorage (sensitive)
+         ===================================================== -->
+    <fieldset>
+      <legend>&#128274; Block 6 &mdash; Account Setup</legend>
+      <table class="form-table">
+
+        <tr>
+          <td class="lbl"><label for="userid">User ID <span class="req">*</span></label></td>
+          <td>
+            <input type="text" id="userid" name="userid"
+                   maxlength="20" size="22"
+                   placeholder="Pick a username"
+                   tabindex="16"
+                   title="User ID: 5-20 characters. Start with a letter. Letters, numbers, dashes, underscores only. No spaces. Auto-lowercased."
+                   pattern="[A-Za-z][A-Za-z0-9_\-]{4,19}"
+                   required
+                   oninput="validateUserID()"
+                   onblur="validateUserID(); forceLowercase('userid'); saveToStorage('userid')">
+            <br><span class="err-msg" id="userid-err"></span>
+            <span class="hint">5-20 chars. Start with a letter. No spaces. Auto-lowercased.</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="lbl"><label for="passid">Password <span class="req">*</span></label></td>
+          <td>
+            <!-- password NOT saved to local storage - security -->
+            <input type="password" id="passid" name="passid"
+                   maxlength="30" size="22"
+                   placeholder="At least 8 characters"
+                   tabindex="17"
+                   title="Password: 8-30 chars. Needs 1 uppercase, 1 lowercase, 1 number. No quotation marks. Cannot equal your User ID."
+                   required
+                   oninput="validatePassword(); checkPasswordMatch()"
+                   onblur="validatePassword()">
+            <br><span class="err-msg" id="passid-err"></span>
+            <div id="strength-bar-wrap"><div id="strength-bar"></div></div>
+            <span id="strength-label" class="hint"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="lbl"><label for="passid2">Confirm Password <span class="req">*</span></label></td>
+          <td>
+            <input type="password" id="passid2" name="passid2"
+                   maxlength="30" size="22"
+                   placeholder="Type it again"
+                   tabindex="18"
+                   title="Confirm Password: must match what you typed above exactly."
+                   required
+                   oninput="checkPasswordMatch()"
+                   onblur="checkPasswordMatch()">
+            <br><span class="err-msg" id="passid2-err"></span>
+            <span id="match-label" class="hint"></span>
+          </td>
+        </tr>
+
+      </table>
+    </fieldset>
+
+    <!-- =====================================================
+         REMEMBER ME CHECKBOX
+         If checked (default): save cookie + localStorage on submit.
+         If unchecked: expire cookie + clear localStorage on submit.
+         ===================================================== -->
+    <fieldset>
+      <legend>&#128196; Preferences</legend>
+      <table class="form-table">
+        <tr>
+          <td class="lbl">Remember Me</td>
+          <td>
+            <!--
+              checked by default as the assignment says.
+              onchange fires immediately so we can expire data right
+              away if the user unchecks it.
+            -->
+            <label class="cb-label" title="Check this to save your information for next time. Uncheck to clear all saved data.">
+              <input type="checkbox" id="rememberMe" name="rememberMe"
+                     checked
+                     onchange="handleRememberMe()">
+              &nbsp;Remember my information for next time
+              <span class="hint">(Uncheck to clear all saved data and cookies)</span>
+            </label>
+          </td>
+        </tr>
+      </table>
+    </fieldset>
+
+    <!-- form action buttons -->
+    <div id="form-buttons">
+      <input type="button" id="btn-review"   value="&#128269; Review"    tabindex="19" onclick="showReview();">
+      <input type="button" id="btn-validate" value="&#10003; Validate"   tabindex="20" onclick="handleValidate();">
+      <input type="reset"  id="btn-reset"    value="&#10006; Start Over" tabindex="21" onclick="resetForm();">
+      <!-- submit only appears when there are zero errors -->
+      <input type="button" id="btn-submit"   value="&#128228; Submit"    tabindex="22"
+             style="display:none;" onclick="doSubmit();">
+    </div>
+
+  </form>
+</div><!-- end left column -->
+
+<!-- review panel -->
+<div id="review-panel">
+  <div id="review-header">
+    <h3>&#128203; Review Your Information</h3>
+    <p class="review-subhead">Green = OK &nbsp;|&nbsp; Red = needs fixing</p>
+  </div>
+  <div id="review-body">
+    <p class="review-placeholder">Click <strong>&#128269; Review</strong> or <strong>&#10003; Validate</strong> to see your data here.</p>
+  </div>
+</div>
+
+</div><!-- end page-wrapper -->
+
+<!-- =====================================================
+     FIXED FOOTER
+     position:fixed in CSS so it always stays at bottom.
+     This is the "content protection" requirement - the footer
+     never scrolls off screen no matter how long the page is.
+     ===================================================== -->
+<div id="footer">
+  <div id="footer-left">
+    <svg width="24" height="24" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="15" cy="15" r="14" fill="#1a56db"/>
+      <rect x="11" y="4" width="8" height="22" rx="3" fill="#fff"/>
+      <rect x="4" y="11" width="22" height="8" rx="3" fill="#fff"/>
+    </svg>
+    <span class="footer-brand">Aabids Medical Clinic</span>
+  </div>
+  <div id="footer-center">
+    <button type="button" id="btn-contact"
+            onclick="alert('Aabids Medical Clinic\nPhone: (713) 555-9100\nEmail: info@aabidsmedical.com\n\nFor emergencies always call 911.');">
+      &#128222; Contact Us
+    </button>
+    <div id="social-links">
+      <a href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a>
+      <span class="sep">|</span>
+      <a href="https://www.twitter.com" target="_blank" rel="noopener">Twitter/X</a>
+      <span class="sep">|</span>
+      <a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a>
+    </div>
+  </div>
+  <div id="footer-right">
+    PO BOX 18881 &nbsp;|&nbsp; Sugar Land, TX 77496 &nbsp;|&nbsp;
+    &copy; <span id="footer-year"></span> Aabids Medical Clinic
+  </div>
+</div><!-- end fixed footer -->
+
+<!-- spacer so fixed footer doesn't cover the bottom of content -->
+<div id="footer-spacer"></div>
+
+<!-- end of homework4.html -->
+</body>
+</html>

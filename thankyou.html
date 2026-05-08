@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!--
+  Program name: thankyou.html
+  Author: Student Name
+  Date created: April 20, 2026
+  Date last edited: April 28, 2026
+  Version: 4.0
+  Description: Confirmation page for Aabids Medical Clinic homework 4.
+  Shows after successful form submission. Uses the same fixed banner,
+  fixed footer, and CSS as homework4.html.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aabids Medical Clinic - Submission Confirmed</title>
+  <link href="style.css" rel="stylesheet">
+  <style>
+    .ty-card { text-align:center; padding:60px 30px; }
+    .check-circle {
+      width:90px; height:90px; background:#0ea47a; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 24px; font-size:2.6rem; color:#fff;
+      box-shadow:0 4px 20px rgba(14,164,122,.4);
+    }
+    .ty-card h2 { font-size:1.65rem; color:#0ea47a; border:none; margin-bottom:14px; }
+    .ty-card p  { font-size:1rem; color:#1b2c47; margin-bottom:10px; line-height:1.8; }
+    .back-btn {
+      display:inline-block; margin-top:28px; padding:10px 26px;
+      background:#1a56db; color:#fff; border-radius:5px;
+      font-family:'Palatino Linotype',serif; font-weight:bold;
+      text-decoration:none; transition:background .18s;
+    }
+    .back-btn:hover { background:#1040b0; color:#fff; }
+    #page-wrapper { display:block; max-width:700px; margin:22px auto; }
+  </style>
+</head>
+<body onload="initTY();">
+
+<!-- fixed banner -->
+<div id="banner">
+  <div id="banner-logo">
+    <svg width="62" height="62" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="34" fill="#1a56db" stroke="#fff" stroke-width="3"/>
+      <rect x="29" y="14" width="14" height="44" rx="5" fill="#fff"/>
+      <rect x="14" y="29" width="44" height="14" rx="5" fill="#fff"/>
+    </svg>
+  </div>
+  <div id="banner-text">
+    <h1>Aabids Medical Clinic</h1>
+    <p id="dynamic-date"></p>
+    <!-- show the welcome message on this page too -->
+    <p id="welcome-msg"></p>
+  </div>
+</div>
+<div id="banner-spacer"></div>
+
+<div id="page-wrapper">
+  <div id="main-content">
+    <div class="ty-card">
+      <div class="check-circle">&#10004;</div>
+      <h2>Thank You for Your Submission!</h2>
+      <p>
+        Your patient registration has been received successfully.<br>
+        We will be contacting you shortly to confirm your appointment.
+      </p>
+      <p>
+        For urgent questions call <strong>(713) 555-9100</strong>.<br>
+        For emergencies always call <strong>911</strong>.
+      </p>
+      <a href="homework4.html" class="back-btn">&larr; Back to Registration Form</a>
+    </div>
+  </div>
+</div>
+
+<!-- fixed footer -->
+<div id="footer">
+  <div id="footer-left">
+    <svg width="24" height="24" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="15" cy="15" r="14" fill="#1a56db"/>
+      <rect x="11" y="4" width="8" height="22" rx="3" fill="#fff"/>
+      <rect x="4" y="11" width="22" height="8" rx="3" fill="#fff"/>
+    </svg>
+    <span class="footer-brand">Aabids Medical Clinic</span>
+  </div>
+  <div id="footer-center">
+    <button type="button" id="btn-contact"
+            onclick="alert('Phone: (713) 555-9100\nFor emergencies call 911');">
+      &#128222; Contact Us
+    </button>
+    <div id="social-links">
+      <a href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a>
+      <span class="sep">|</span>
+      <a href="https://www.twitter.com" target="_blank" rel="noopener">Twitter/X</a>
+    </div>
+  </div>
+  <div id="footer-right">
+    PO BOX 18881 &nbsp;|&nbsp; Sugar Land, TX 77496 &nbsp;|&nbsp;
+    &copy; <span id="footer-year"></span> Aabids Medical Clinic
+  </div>
+</div>
+<div id="footer-spacer"></div>
+
+<script>
+  function initTY() {
+    var days   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    var months = ["January","February","March","April","May","June",
+                  "July","August","September","October","November","December"];
+    var now = new Date(), d = now.getDate();
+    var sfx = (d===1||d===21||d===31)?"st":(d===2||d===22)?"nd":(d===3||d===23)?"rd":"th";
+    document.getElementById("dynamic-date").innerHTML =
+      "Today is: <strong>"+days[now.getDay()]+", "+months[now.getMonth()]+" "+d+sfx+", "+now.getFullYear()+"</strong>";
+    document.getElementById("footer-year").textContent = now.getFullYear();
+
+    // show the welcome message using the cookie if it exists
+    function getCookie(name) {
+      var nameEQ = name + "=";
+      var cookies = document.cookie.split(";");
+      for (var i = 0; i < cookies.length; i++) {
+        var c = cookies[i].trim();
+        if (c.indexOf(nameEQ) === 0) { return decodeURIComponent(c.substring(nameEQ.length)); }
+      }
+      return "";
+    }
+    var firstName = getCookie("amc_firstname");
+    var welcomeEl = document.getElementById("welcome-msg");
+    if (firstName && welcomeEl) {
+      welcomeEl.innerHTML = "See you soon, <strong>" + firstName + "</strong>! &#128512;";
+      welcomeEl.style.color = "#0ea47a";
+    }
+  }
+</script>
+
+<!-- end of thankyou.html -->
+</body>
+</html>

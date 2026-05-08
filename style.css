@@ -1,0 +1,613 @@
+/*
+  Program name: style.css
+  Author: Student Name
+  Date created: April 20, 2026
+  Date last edited: April 28, 2026
+  Version: 4.0
+  Description: External CSS for Aabids Medical Clinic homework 4.
+  Updated from hw3 to add:
+    - position:fixed on the banner (stays at top when scrolling)
+    - position:fixed on the footer (stays at bottom when scrolling)
+    - spacer divs so the fixed elements don't cover content
+    - styles for the iFrame map wrapper
+    - styles for the "Not you?" cookie box in the banner
+    - styles for the Remember Me fieldset
+  Uses tag, class, id, and attribute selectors throughout.
+*/
+
+/* ======================================================
+   CSS VARIABLES
+   ====================================================== */
+:root {
+  --blue:        #1a56db;
+  --blue-dk:     #1040b0;
+  --teal:        #0ea47a;
+  --teal-lt:     #d1faf0;
+  --navy:        #0c2461;
+  --bg-page:     #dce8f7;
+  --bg-white:    #ffffff;
+  --bg-field:    #f4f8ff;
+  --bg-fieldset: #f9fbff;
+  --text-main:   #1b2c47;
+  --text-muted:  #4e6080;
+  --border:      #aac4e0;
+  --red:         #c0392b;
+  --red-lt:      #fdf0ef;
+  --green:       #27ae60;
+  --radius:      8px;
+  --shadow:      0 4px 20px rgba(26,86,219,0.10);
+  --focus-ring:  0 0 0 3px rgba(26,86,219,0.22);
+
+  /* non-default font choices */
+  --font-heading: 'Palatino Linotype', 'Palatino', Georgia, serif;
+  --font-body:    Georgia, 'Times New Roman', serif;
+  --font-mono:    'Courier New', Courier, monospace;
+
+  /* banner and footer heights so spacers match exactly */
+  --banner-h: 90px;
+  --footer-h: 52px;
+}
+
+/* ======================================================
+   RESET - tag selector
+   ====================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.65;
+}
+
+/* ======================================================
+   HEADINGS - tag selectors with non-default fonts
+   ====================================================== */
+h1 {
+  font-family: var(--font-heading);  /* Palatino - non-default */
+  font-size: 1.7rem;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  color: var(--blue);
+  border-bottom: 2px solid var(--teal);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+
+h3 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: #ffffff;
+}
+
+/* ======================================================
+   FIXED BANNER - id selector
+   position:fixed keeps it stuck to the top even when
+   the user scrolls down. z-index makes sure it's on top
+   of everything else.
+   ====================================================== */
+#banner {
+  position: fixed;          /* THIS is what keeps it at the top */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;            /* sit above all the form content */
+  background-color: var(--navy);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 32px;
+  border-bottom: 4px solid var(--teal);
+  box-shadow: 0 3px 14px rgba(0,0,0,0.35);
+  height: var(--banner-h);
+}
+
+#banner-logo svg {
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  flex-shrink: 0;
+}
+
+#banner-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+
+/* id selector - Courier font for dynamic date (3rd distinct font) */
+#dynamic-date {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--teal);
+}
+
+/* id selector - welcome message */
+#welcome-msg {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.85);
+  font-style: italic;
+}
+
+/* id selector - the "Not [name]?" box on the right side of banner */
+#not-you-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.08);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+#not-you-msg {
+  color: rgba(255,255,255,0.7);
+}
+
+/* id selector - the clickable link in the not-you box */
+#not-you-link {
+  color: var(--teal);
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 0.82rem;
+}
+#not-you-link:hover { text-decoration: underline; color: #fff; }
+
+/* id selector - spacer that pushes content below the fixed banner */
+#banner-spacer {
+  height: var(--banner-h);
+  flex-shrink: 0;
+}
+
+/* ======================================================
+   ERROR BANNER - id selector
+   ====================================================== */
+#error-banner {
+  background-color: #fdf0ef;
+  border: 2px solid var(--red);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  color: var(--red);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* ======================================================
+   PAGE WRAPPER - two column layout
+   ====================================================== */
+#page-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  max-width: 1300px;
+  margin: 22px auto 16px;
+  padding: 0 16px;
+}
+
+/* ======================================================
+   MAIN CONTENT - id selector
+   ====================================================== */
+#main-content {
+  flex: 1 1 580px;
+  min-width: 0;
+  padding: 22px 28px;
+  background-color: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* class selector */
+.form-intro {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #eef4ff;
+  border-left: 4px solid var(--blue);
+  border-radius: 0 4px 4px 0;
+}
+
+.req { color: var(--red); font-weight: bold; }
+
+/* ======================================================
+   FIELDSETS - tag selectors
+   ====================================================== */
+fieldset {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  background-color: var(--bg-fieldset);
+}
+fieldset:focus-within { box-shadow: 0 0 0 2px rgba(26,86,219,0.12); }
+
+legend {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: var(--blue-dk);
+  padding: 2px 10px;
+  background: var(--bg-white);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+}
+
+.section-note {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+/* ======================================================
+   IFRAME MAP WRAPPER - id selector
+   ====================================================== */
+#map-wrapper {
+  margin-top: 6px;
+}
+
+/* tag selector - the iframe itself */
+iframe {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+/* ======================================================
+   FORM TABLE - class selectors
+   ====================================================== */
+.form-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.lbl {
+  width: 190px;
+  vertical-align: top;
+  padding-top: 6px;
+  padding-right: 12px;
+  text-align: right;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.inline-lbl {
+  font-size: 0.84rem;
+  font-weight: bold;
+  color: var(--text-muted);
+  margin: 0 4px;
+}
+
+/* ======================================================
+   INPUT FIELDS - attribute selectors
+   ====================================================== */
+input[type="text"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+  font-family: var(--font-body);
+  font-size: 0.87rem;
+  padding: 5px 9px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg-field);
+  color: var(--text-main);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  background-color: var(--bg-white);
+  box-shadow: var(--focus-ring);
+}
+
+input:invalid:not(:placeholder-shown) {
+  border-color: var(--red);
+  background-color: var(--red-lt);
+}
+
+textarea { resize: vertical; min-height: 88px; vertical-align: top; }
+select { cursor: pointer; }
+
+/* ======================================================
+   ERROR MESSAGES - class selector
+   min-height so page doesn't jump around
+   ====================================================== */
+.err-msg {
+  display: inline-block;
+  min-height: 1.2em;
+  color: var(--red);
+  font-size: 0.77rem;
+  font-weight: bold;
+  font-style: italic;
+  margin-top: 2px;
+  margin-left: 2px;
+}
+
+.hint {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: #e8edf5;
+  border: 1px solid #b8c8dc;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 0 5px;
+}
+
+/* ======================================================
+   CHECKBOXES AND RADIOS
+   ====================================================== */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--blue);
+  width: 14px; height: 14px;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+label { cursor: pointer; font-size: 0.87rem; }
+
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 4px 0; }
+
+.cb-label {
+  display: flex; align-items: center;
+  padding: 3px 8px; border-radius: 4px;
+  transition: background-color 0.15s;
+}
+.cb-label:hover { background-color: var(--teal-lt); }
+
+.radio-group { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 4px 0; }
+
+.rb-label {
+  display: flex; align-items: center;
+  padding: 3px 9px; border-radius: 4px;
+  transition: background-color 0.15s;
+}
+.rb-label:hover { background-color: var(--teal-lt); }
+
+/* ======================================================
+   SLIDERS
+   ====================================================== */
+input[type="range"] {
+  vertical-align: middle; width: 180px; height: 6px;
+  accent-color: var(--blue); cursor: pointer;
+}
+
+.slider-row {
+  display: flex; align-items: center;
+  gap: 8px; flex-wrap: wrap; margin-bottom: 4px;
+}
+
+.slider-end {
+  font-size: 0.77rem; color: var(--text-muted);
+  text-align: center; line-height: 1.2; min-width: 28px;
+}
+
+.slider-current {
+  font-size: 0.87rem; color: var(--blue);
+  background: #e8f0ff; padding: 2px 9px;
+  border-radius: 20px; border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* ======================================================
+   PASSWORD STRENGTH BAR - id selectors
+   ====================================================== */
+#strength-bar-wrap {
+  width: 190px; height: 7px; background: #dde4f0;
+  border-radius: 4px; margin: 5px 0 2px; overflow: hidden;
+}
+
+#strength-bar {
+  height: 100%; width: 0%;
+  border-radius: 4px;
+  transition: width 0.3s, background-color 0.3s;
+}
+
+/* ======================================================
+   FORM BUTTONS - id selectors
+   ====================================================== */
+#form-buttons {
+  text-align: center; padding: 14px 0 6px;
+  border-top: 1.5px solid var(--border); margin-top: 6px;
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+
+#btn-review {
+  background-color: #5b4fcf; color: #fff; border: none;
+  padding: 9px 18px; font-family: var(--font-heading); font-size: 0.88rem;
+  font-weight: bold; border-radius: 4px; cursor: pointer;
+  transition: background-color 0.18s;
+}
+#btn-review:hover { background-color: #4438b0; }
+
+#btn-validate {
+  background-color: var(--teal); color: #fff; border: none;
+  padding: 9px 18px; font-family: var(--font-heading); font-size: 0.88rem;
+  font-weight: bold; border-radius: 4px; cursor: pointer;
+  transition: background-color 0.18s;
+}
+#btn-validate:hover { background-color: #0a8a65; }
+
+#btn-reset {
+  background-color: #5a6a80; color: #fff; border: none;
+  padding: 9px 18px; font-family: var(--font-heading); font-size: 0.88rem;
+  border-radius: 4px; cursor: pointer; transition: background-color 0.18s;
+}
+#btn-reset:hover { background-color: #3d4f63; }
+
+/* submit glows a bit so it stands out when it finally appears */
+#btn-submit {
+  background-color: var(--blue); color: #fff; border: none;
+  padding: 9px 22px; font-family: var(--font-heading); font-size: 0.88rem;
+  font-weight: bold; border-radius: 4px; cursor: pointer;
+  transition: background-color 0.18s;
+  box-shadow: 0 0 0 3px rgba(26,86,219,0.3);
+}
+#btn-submit:hover { background-color: var(--blue-dk); }
+
+/* ======================================================
+   HYPERLINKS - all 4 states, tag selectors
+   ====================================================== */
+a:link    { color: var(--blue);    text-decoration: none; }
+a:visited { color: #6b3fa0; }
+a:hover   { color: var(--teal);   text-decoration: underline; }
+a:active  { color: var(--blue-dk); }
+
+/* ======================================================
+   REVIEW PANEL - id + class selectors
+   ====================================================== */
+#review-panel {
+  flex: 0 0 340px;
+  position: sticky;
+  top: calc(var(--banner-h) + 16px); /* sits below the fixed banner */
+  max-height: calc(100vh - var(--banner-h) - var(--footer-h) - 32px);
+  overflow-y: auto;
+  background-color: #f0f6ff;
+  border: 2px solid var(--blue);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+}
+
+#review-header {
+  background-color: var(--navy); color: #fff;
+  padding: 12px 16px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  position: sticky;
+  top: 0;
+}
+
+.review-subhead { font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
+
+#review-body { padding: 12px 14px; flex: 1; }
+
+.review-placeholder {
+  font-size: 0.87rem; color: var(--text-muted);
+  text-align: center; padding: 20px 8px; font-style: italic;
+}
+
+.rv-section-title {
+  font-family: var(--font-heading); font-size: 0.8rem;
+  font-weight: bold; color: var(--blue-dk);
+  background: #dce8f7;
+  padding: 4px 10px; margin: 10px -14px 5px;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+
+.rv-row {
+  display: grid; grid-template-columns: 105px 1fr 55px;
+  gap: 4px; align-items: start;
+  padding: 4px 0; border-bottom: 1px dotted #c8d8ee;
+  font-size: 0.8rem;
+}
+
+.rv-label  { font-weight: bold; color: var(--text-muted); font-size: 0.77rem; padding-right: 5px; }
+.rv-value  { color: var(--text-main); word-break: break-word; }
+.rv-status { font-size: 0.73rem; font-weight: bold; text-align: right; white-space: nowrap; }
+.rv-pass   { color: var(--green); }
+.rv-error  { color: var(--red); }
+.rv-note   { grid-column: 2/4; font-size: 0.73rem; color: var(--red); font-style: italic; }
+
+/* ======================================================
+   FIXED FOOTER - id selector
+   position:fixed keeps it stuck to the bottom.
+   This is the "content protection" requirement - the footer
+   is always visible no matter how far down the user scrolls.
+   ====================================================== */
+#footer {
+  position: fixed;        /* THIS keeps it at the bottom always */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--navy);
+  color: rgba(255,255,255,0.85);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 32px;
+  border-top: 4px solid var(--teal);
+  height: var(--footer-h);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+#footer-left { display: flex; align-items: center; gap: 10px; }
+
+.footer-brand {
+  font-family: var(--font-heading); font-size: 0.95rem;
+  font-weight: bold; color: var(--teal);
+}
+
+#footer-center { display: flex; align-items: center; gap: 12px; }
+
+#btn-contact {
+  background-color: var(--teal); color: var(--navy); border: none;
+  padding: 5px 14px; font-size: 0.82rem; font-weight: bold;
+  font-family: var(--font-heading); border-radius: 4px;
+  cursor: pointer; transition: background-color 0.18s;
+}
+#btn-contact:hover { background-color: #0a8a65; color: #fff; }
+
+#social-links { font-size: 0.78rem; }
+#social-links a:link,
+#social-links a:visited { color: rgba(255,255,255,0.75); }
+#social-links a:hover   { color: var(--teal); }
+
+.sep { margin: 0 5px; color: rgba(255,255,255,0.3); }
+
+#footer-right { text-align: right; color: rgba(255,255,255,0.55); font-size: 0.75rem; }
+
+/* id selector - spacer that adds padding below all content so the
+   fixed footer doesn't cover the last bit of the page */
+#footer-spacer {
+  height: calc(var(--footer-h) + 16px);
+}
+
+/* ======================================================
+   RESPONSIVE - single column on small screens
+   ====================================================== */
+@media (max-width: 900px) {
+  #page-wrapper  { flex-direction: column; }
+  #review-panel  { position: static; max-height: none; flex: unset; width: 100%; }
+}
+
+@media (max-width: 600px) {
+  #banner  { flex-direction: column; height: auto; padding: 10px 16px; }
+  #banner-spacer { height: 130px; }
+  #footer  { flex-direction: column; height: auto; padding: 8px 16px; }
+  #footer-spacer { height: 110px; }
+  #main-content { padding: 12px 10px; }
+  .lbl { display: block; text-align: left; width: 100%; padding-right: 0; }
+  #footer-right { display: none; } /* hide address on very small screens */
+}
+
+/* end of style.css */
