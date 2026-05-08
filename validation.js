@@ -1,6 +1,6 @@
 /*
   Program name: validation.js
-  Author: Student Name
+  Author: Aabid Kazia
   Date created: April 1, 2026
   Date last edited: April 14, 2026
   Version: 3.0
