@@ -1,6 +1,6 @@
 /*
   Program name: homework4.js
-  Author: Student Name
+  Author: Aabid Kazia
   Date created: April 20, 2026
   Date last edited: April 28, 2026
   Version: 4.0
